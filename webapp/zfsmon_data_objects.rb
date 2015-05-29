@@ -182,7 +182,7 @@ class ZFSDataset
 
     # A hard limit on the amount of space used by this dataset and descendants.
     # ZFS prints '-' if not defined, so leave nil ifndef.
-    property :quota,            Integer, :required => false
+    property :quota,            Integer, :required => false, :max => 9223372036854775808
 
     # The minimum amount of space guaranteed to a dataset  and its descendants.
     property :reserv,           Integer, :required => false
@@ -197,7 +197,7 @@ class ZFSDataset
     property :mountpoint,       String, :required => true, :default => 'none', :length => 255
 
     # Controls whether the file system is shared via NFS
-    property :sharenfs,         String, :required => false, :length => 150
+    property :sharenfs,         String, :required => false, :length => 2048
 
     # Controls the checksum used to verify data integrity.
     property :checksum,         Enum[ :auto, :fletcher2, :fletcher4, :sha256, :sha256mac, :off ], :required => true, :default => :auto
@@ -407,7 +407,7 @@ class ZFSSnap
 
     # A hard limit on the amount of space used by this dataset and descendants.
     # ZFS prints '-' if not defined, so leave nil ifndef.
-    property :quota,            Integer, :required => false
+    property :quota,            Integer, :required => false, :max => 9223372036854775808
 
     # The minimum amount of space guaranteed to a dataset  and its descendants.
     property :reserv,           Integer, :required => false
@@ -422,7 +422,7 @@ class ZFSSnap
     property :mountpoint,       String, :required => false, :default => 'none', :length => 255
 
     # Controls whether the file system is shared via NFS
-    property :sharenfs,         String, :required => false, :length => 150
+    property :sharenfs,         String, :required => false, :length => 2048
 
     # Controls the checksum used to verify data integrity.
     property :checksum,         Enum[ :auto, :fletcher2, :fletcher4, :sha256, :sha256mac, :off ], :required => false

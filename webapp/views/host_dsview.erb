@@ -17,7 +17,7 @@ td {
 }
 </style>
 
-<% @host.datasets.each_with_index do |ds, i| %>
+<% @datasets.each do |ds| %>
     <div class="row">
         <div class="span8">
             <h3><a href="/<%= @host.hostname + '/datasets/' + ds.name %>"><%= ds.name %></a></h3>
@@ -38,3 +38,4 @@ td {
         </div>
     </div>
 <% end %>
+            <%= will_paginate @datasets %>

@@ -2,6 +2,9 @@ require 'sinatra'
 require 'data_mapper'
 require 'yaml'
 require 'json'
+require 'rbtrace'
+require 'will_paginate'
+require 'will_paginate/array'
 
 require "#{File.dirname(__FILE__)}/zfsmon_data_objects"
 require "#{File.dirname(__FILE__)}/zfs_utils"
@@ -9,15 +12,16 @@ require "#{File.dirname(__FILE__)}/zfs_ssh"
 
 configure do
     enable :static
+    enable :lock
 end
 $WD = File.dirname(__FILE__)
 if $WD == '.' then $WD = Dir.pwd end
 
-# DataMapper::Logger.new(STDOUT, :debug) if (settings.environment != :production)
+DataMapper::Logger.new(STDOUT, :debug) #if (settings.environment != :production)
 #DataMapper.setup(:default, "sqlite3://#{File.join($WD, 'zfsdata.db')}")
 DataMapper.setup(:default, "mysql://user:password@localhost/zfsmon")
 DataMapper.finalize.auto_upgrade!
-
+#DataMapper::Logger.new('/var/www/app/zfs/log/db.log', 0)
 helpers ZUtil
 helpers do
    def make_vdevs(vdev, parent_pool = nil, parent_vdev = nil)
@@ -95,8 +99,9 @@ end
 get '/:host/?' do
     @host = ZUtil.get_host_record params[:host]
     if @host
-        @title = 'Host View'
-        erb :hostview
+        @title = 'Host View'	
+	@datasets = @host.datasets.paginate(page: params[:page], per_page: 5)
+	erb :hostview
     else
         host_not_found params[:host]
     end
@@ -227,6 +232,7 @@ get '/:host/datasets/?' do
         host_not_found params[:host]
     end
     @title = "All datasets on #{@host.hostname}"
+    @datasets = @host.datasets.paginate(page: params[:page], per_page: 5)
     erb :host_dsview
 end
 
@@ -276,7 +282,7 @@ post '/:host/datasets/:ds/snapshots/:snap/?' do
         host_not_found params[:host]
     end
     @ds = ZUtil.get_ds_record @host, params[:ds]
-    sleep 0.5 if not @ds.saved?
+    #sleep 0.5 if not @ds.saved?
 
     @snap = @ds.snapshots.first_or_create :dataset => @ds, :name => params[:snap]
     request.POST.each do |k, v|
@@ -381,7 +387,7 @@ post '/:host/pools/:pool/status/?' do
     @pool.scan = status['scan']
 
     # ditch the existing vdev records
-    @pool.vdevs.each {|v| v.destroy!}
+    @pool.vdevs.each {|v| v.destroy}
     status['config'].each do |v|
       begin
         child = Vdev.get(make_vdevs(v, @pool))

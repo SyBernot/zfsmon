@@ -100,6 +100,7 @@
         &nbsp;
     </div>
 </div>
+
 <div class="row">
     <div class="span12">
         <table class="table table-striped sortable">
@@ -112,30 +113,34 @@
                 <th title="<%= ZUtil.get_desc :ds, 'mountpoint' %>">Mount Point</th>
                 <th>Last Snapshot</th>
             </tr>
-            <% @host.datasets.each_with_index do |ds, index| %>
-                <tr>
-                    <td><a href="<%= @host.hostname + '/datasets/' + ds.name %>"><%= ds.name %></a></td>
-                    <td><%= ds.type %></td>
-                    <td sorttable_customkey="<%= ds.avail %>"><%= ZUtil.convert_human_bytes ds.avail %></td>
-                    <td sorttable_customkey="<%= ds.used %>"><%= ZUtil.convert_human_bytes ds.used %></td>
-                    <td sorttable_customkey="<%= ds.mounted %>">
-                        <span class="label <%= ds.mounted ? 'label-info' : '' %>">
-                            <%= ds.mounted ? 'yes' : 'no' %>
-                        </span>
-                    </td>
-                    <td>
-                        <% if ds.mounted %>
-                            <code><%= ds.mountpoint %></code>
-                        <% end %>
-                    </td>
-                    <td sorttable_customkey="<%= (snap = ds.last_snap) ? snap.creation.strftime("%s") : '0' %>">
-                        <%= (ds.last_snapshot_time == Time.new(0)) ? 'Never' : ds.last_snapshot_time.strftime('<nobr>%B %d, %Y</nobr> <nobr>at %l:%M %P</nobr>') %>
-                    </td>
-                </tr>
-            <% end %>
+	    	<tbody>
+	    	<% @datasets.each do |ds| %> 
+		<tr>
+			<td><a href="<%= @host.hostname + '/datasets/' + ds.name %>"><%= ds.name %></a></td>
+			<td><%= ds.type %></td>
+			<td sorttable_customkey="<%= ds.avail %>"><%= ZUtil.convert_human_bytes ds.avail %></td>
+			<td sorttable_customkey="<%= ds.used %>"><%= ZUtil.convert_human_bytes ds.used %></td>
+			<td sorttable_customkey="<%= ds.mounted %>">
+				<span class="label <%= ds.mounted ? 'label-info' : '' %>">
+					<%= ds.mounted ? 'yes' : 'no' %>
+				</span>
+			</td>
+			<td>
+				<% if ds.mounted %>
+					<code><%= ds.mountpoint %></code>
+				<% end %>
+			</td>
+			<td sorttable_customkey="<%= (snap = ds.last_snap) ? snap.creation.strftime("%s") : '0' %>">
+				<%= (ds.last_snapshot_time == Time.new(0)) ? 'Never' : ds.last_snapshot_time.strftime('<nobr>%B %d, %Y</nobr> <nobr>at %l:%M %P</nobr>') %>
+			</td>
+			</tr>
+		<% end %>
+		</tbody>  
         </table>
+	<%= will_paginate @datasets %>
     </div>
 </div>
+
 <script type="application/javascript">
     $("#host_delete").click(function(e) {
         var confirmation = confirm("This will delete all data stored for <%= @host.hostname %> from the server.\n" 
